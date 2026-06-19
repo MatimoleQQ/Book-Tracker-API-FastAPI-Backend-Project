@@ -3,8 +3,10 @@ import type { Book } from "../types/book"
 const API_URL = "http://localhost:8000";
 
 export const getBooks = (sortBy = "id") => {
-  return axios.get<Book[]>(`${API_URL}/books`, {
-    params: { sort_by: sortBy },
+  return axios.get(`${API_URL}/books`, {
+    params: {
+      sort_by: sortBy,
+    },
   });
 };
 
