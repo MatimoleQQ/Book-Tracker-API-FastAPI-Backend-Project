@@ -1,18 +1,37 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from typing import List
 
 from backend.app.database import get_db
 from backend.app.models import Book
 from backend.app.schemas import BookCreate, BookResponse
 
 router = APIRouter()
-@router.get("/books", response_model=list[BookResponse])
+@router.get("/books")
 def get_books(
-        sort_by: str = "id",
-        db: Session = Depends(get_db)
+    sort_by: str = "id",
+    sort_order: str = "desc",
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db)
 ):
-    return db.query(Book).order_by(getattr(Book, sort_by)).all()
+    query = db.query(Book)
 
+    total = query.count()
+
+    column = getattr(Book, sort_by)
+
+    if sort_order == "desc":
+        query = query.order_by(column.desc())
+    else:
+        query = query.order_by(column.asc())
+
+    books = query.offset(skip).limit(limit).all()
+
+    return {
+        "data": books,
+        "total": total
+    }
 @router.post("/books", response_model=BookResponse)
 def create_book(book: BookCreate, db: Session = Depends(get_db)):
     db_book = Book(**book.dict())
