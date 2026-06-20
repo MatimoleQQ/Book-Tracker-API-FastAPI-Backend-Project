@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createBook } from "../api/booksApi";
+import BookInput from "./BookInput";
+
 
 
 export default function BookForm({ onAdd }: any) {
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
   const [form, setForm] = useState({
     title: "",
     author: "",
@@ -10,52 +15,154 @@ export default function BookForm({ onAdd }: any) {
     pages: 0,
     rating: 1,
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<string[]>([]);
 
+
+  useEffect(() => {
+  if (toast) {
+    const timer = setTimeout(() => setToast(null), 2500);
+    return () => clearTimeout(timer);
+  }
+}, [toast]);
 
   const handleChange = (e: any) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+        const { name, value } = e.target;
 
-  const handleSubmit = async (e: any) => {
+        setForm((prev) => ({
+          ...prev,
+          [name]:
+            name === "pages" || name === "rating"
+              ? Number(value)
+              : value,
+        }));
+      };
 
-    e.preventDefault();
+      const handleSubmit = async (e: any) => {
+          e.preventDefault();
 
-    setError("");
+          setFieldErrors({});
+          setToast(null);
 
-    if (form.isbn.length < 10) {
-      setError("ISBN must contain at least 10 characters");
-      return;
-    }
+          try {
+            await createBook(form);
 
-    if (form.pages <= 0) {
-      setError("Pages must be greater than 0");
-      return;
-    }
+            onAdd();
 
-    if (form.rating < 1 || form.rating > 5) {
-      setError("Rating must be between 1 and 5");
-      return;
-    }
-    await createBook(form);
-    onAdd();
-  };
+            setToast({
+              type: "success",
+              message: "Book created successfully!",
+            });
+
+            setForm({
+              title: "",
+              author: "",
+              isbn: "",
+              pages: 0,
+              rating: 1,
+            });
+
+          } catch (err: any) {
+            const backendErrors = err.response?.data?.errors;
+
+            if (Array.isArray(backendErrors)) {
+              const mapped: Record<string, string> = {};
+
+              backendErrors.forEach((e: string) => {
+                const [field, msg] = e.split(":");
+                mapped[field.trim()] = msg.trim();
+              });
+
+              setFieldErrors(mapped);
+            } else {
+              setToast({
+                type: "error",
+                message: "Failed to create book",
+              });
+            }
+          }
+        };
 
   return (
 
 
     <>
-    {error && <p>{error}</p>}
+    {errors.length > 0 && (
+      <div>
+        {errors.map((err, i) => (
+          <p
+            key={i}
+            style={{
+              color: "red",
+              margin: "4px 0",
+              fontWeight: "bold",
+            }}
+          >
+            {err}
+          </p>
+        ))}
+      </div>
+    )}
 
     <form onSubmit={handleSubmit}>
-      <input name="title" placeholder="Title" onChange={handleChange} />
-      <input name="author" placeholder="Author" onChange={handleChange} />
-      <input name="isbn" placeholder="ISBN" onChange={handleChange} />
-      <input name="pages" type="number" placeholder="Pages" onChange={handleChange} />
-      <input name="rating" type="number" min="1" max="5" onChange={handleChange} />
+        <BookInput
+          name="title"
+          value={form.title}
+          onChange={handleChange}
+          placeholder="Title"
+          error={fieldErrors.title}
+        />
 
+        <BookInput
+          name="author"
+          value={form.author}
+          onChange={handleChange}
+          placeholder="Author"
+          error={fieldErrors.author}
+        />
+
+        <BookInput
+          name="isbn"
+          value={form.isbn}
+          onChange={handleChange}
+          placeholder="ISBN"
+          error={fieldErrors.isbn}
+        />
+
+        <BookInput
+          name="pages"
+          value={form.pages}
+          onChange={handleChange}
+          placeholder="Pages"
+          type="number"
+          error={fieldErrors.pages}
+        />
+
+        <BookInput
+          name="rating"
+          value={form.rating}
+          onChange={handleChange}
+          placeholder="Rating"
+          type="number"
+          error={fieldErrors.rating}
+        />
       <button type="submit">Add Book</button>
     </form>
+
+        {toast && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+              padding: "12px 16px",
+              background: toast.type === "success" ? "green" : "red",
+              color: "white",
+              borderRadius: 8,
+            }}
+          >
+            {toast.message}
+          </div>
+        )}
     </>
   );
 }

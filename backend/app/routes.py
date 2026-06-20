@@ -34,7 +34,7 @@ def get_books(
     }
 @router.post("/books", response_model=BookResponse)
 def create_book(book: BookCreate, db: Session = Depends(get_db)):
-    db_book = Book(**book.dict())
+    db_book = Book(**book.model_dump())
     db.add(db_book)
     db.commit()
     db.refresh(db_book)

@@ -17,14 +17,20 @@ export default function BooksPage() {
   const totalPages = Math.ceil(total / limit);
 
   const loadBooks = async () => {
-    const res = await getBooks(
-    sortBy,
-    sortOrder,
-    page,
-    limit
-    );
-    setBooks(res.data.data);
-    setTotal(res.data.total);
+    setLoading(true);
+    try {
+     const res = await getBooks(
+     sortBy,
+     sortOrder,
+     page,
+     limit
+     );
+     setBooks(res.data.data);
+     setTotal(res.data.total);
+    } finally {
+     setLoading(false);
+    }
+
   };
 
   useEffect(() => {
@@ -83,25 +89,38 @@ console.log("limit:", limit);
           <option value={50}>50</option>
         </select>
 
-        <button
-          onClick={() => setPage(page - 1)}
-          disabled={page === 1}
-        >
-          Prev
-        </button>
 
-        <span>
-          {page} / {totalPages}
-        </span>
+        {loading && <p>Loading...</p>}
 
-        <button
-          onClick={() => setPage(page + 1)}
-          disabled={page >= totalPages}
-        >
-          Next
-        </button>
+        {!loading && books.length === 0 && (
+          <p>No books found.</p>
+        )}
 
-      <BookTable books={books} />
+        {!loading && books.length > 0 && (
+          <>
+            <BookTable books={books} />
+
+            <div>
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Prev
+              </button>
+
+              <span>
+                Page {page} of {totalPages}
+              </span>
+
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
     </div>
   );
 }
