@@ -4,8 +4,7 @@ import BookTable from "../components/BookTable";
 import { getBooks, searchBooks } from "../api/booksApi";
 
 export default function BooksPage() {
-  const [books, setBooks] = useState([]);
-  const [search, setSearch] = useState("");
+  const [books, setBooks] = useState<Book[]>([]);  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useState("id");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -13,29 +12,33 @@ export default function BooksPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
 
+
+
+  const isSearching = search.trim().length > 0;
+
   const totalPages = Math.ceil(total / limit);
 
   const loadBooks = async () => {
-    setLoading(true);
-    try {
-      const res = await getBooks(sortBy, sortOrder, page, limit);
-      setBooks(res.data.data);
-      setTotal(res.data.total);
-    } finally {
-      setLoading(false);
-    }
+      setLoading(true);
+
+      try {
+        const res = isSearching
+          ? await searchBooks(search, page, limit)
+          : await getBooks(sortBy, sortOrder, page, limit);
+
+        setBooks(res?.data?.data ?? res?.data ?? []);
+        setTotal(res?.data?.total ?? 0);
+      } finally {
+        setLoading(false);
+      }
   };
 
-  useEffect(() => {
-    loadBooks();
-  }, [sortBy, sortOrder, page, limit]);
+ useEffect(() => {
+   loadBooks();
+ }, [search, page, sortBy, sortOrder, limit]);
 
   useEffect(() => {
-    if (search) {
-      searchBooks(search).then((res) => setBooks(res.data));
-    } else {
-      loadBooks();
-    }
+    setPage(1);
   }, [search]);
 
   return (
