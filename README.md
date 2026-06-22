@@ -1,40 +1,56 @@
 # 📚 Book Tracker API
 
-A scalable backend system built with **FastAPI** for managing books, designed with performance, clean architecture, and real-world scalability in mind.
+A scalable backend system built with **FastAPI** for managing books.
 
-The project focuses on building a production-style REST API with data validation, search functionality, and pagination, prepared to handle large datasets (10M+ records).
+Designed with performance, clean architecture, and real-world scalability in mind.
+
+Supports datasets of **10M+ records** with pagination, indexing, and optimized queries.
 
 ---
 
-## 🚀 Features
+## 🎯 Features
 
 ### 📖 Book Management
-- Create new books
-- Retrieve list of books
-- Input validation for all fields
-- Clean and consistent API responses
-
-### 🔎 Search Functionality
-- Search books by **title** or **author**
-- Case-insensitive partial matching
-- Efficient SQL filtering using `ILIKE`
-
-### 📄 Pagination
-- Server-side pagination (`skip` / `limit`)
-- Optimized for large datasets
-- Prevents loading full database into memory
+- Create books
+- List books (paginated)
+- Strong backend validation
+- Clean API responses
 
 ---
 
-## 🧠 Key Design Decisions
+### 🔎 Search
+- Search by title and author
+- Case-insensitive partial matching
+- Optimized database queries
 
-This project was built with scalability and maintainability in mind:
+---
 
-- **Database indexing** on `title` and `author` for faster search queries  
-- **Separation of concerns** (routes, models, schemas, database layer)  
-- **Pydantic validation** for request integrity  
-- Stateless REST API design  
-- Pagination to support large-scale datasets (10M+ records)
+### 📄 Pagination
+- Server-side pagination (skip / limit)
+- Efficient for large datasets
+- Prevents memory overload
+
+---
+
+### 🔃 Sorting
+- Sort by:
+  - id / created_at
+  - title
+  - author
+  - pages
+  - rating
+- Asc / Desc ordering
+
+---
+
+## 🧠 Architecture Decisions
+
+- PostgreSQL database
+- Indexed columns (title, author)
+- Separation of concerns (routes / schemas / models / db)
+- Pydantic validation layer
+- REST API stateless design
+- Query-level filtering in database (no in-memory operations)
 
 ---
 
@@ -45,77 +61,134 @@ This project was built with scalability and maintainability in mind:
 - PostgreSQL
 - Pydantic
 - Uvicorn
+- Pytest
 
 ---
 
 ## 📁 Project Structure
+
 ````
 app/
-├── main.py # Application entry point
-├── database.py # Database connection & session
-├── models.py # SQLAlchemy models
-├── schemas.py # Pydantic validation schemas
-├── routes.py # API endpoints
----
+├── main.py
+├── database.py
+├── models.py
+├── schemas.py
+├── routes.py
 ````
+---
 
 ## 🔌 API Endpoints
 
-### ➕ Create a Book
-```
-POST /books
- 
-Request Body:
+### Create Book
+````POST /books````
 
-{
-  "title": "Clean Code",
-  "author": "Robert C. Martin",
-  "isbn": "9780132350884",
-  "pages": 464,
-  "rating": 5
-}
-```
-### 📚 Get Books (Paginated)
-```GET /books?skip=0&limit=20```
-### 🔍 Search Books
-```GET /books/search?q=clean```
-### 🧪 Validation Rules
-```title → required, min 1 character
-author → required, min 1 character
-isbn → 10–13 characters
-pages → must be greater than 0
-rating → range 1–5
-```
+### Get Books
+````GET /books?skip=0&limit=10````
 
-## 📈 Scalability Considerations
+### Search Books
+````GET /books/search?q=title````
 
-This system was designed with production-like scalability in mind:
+---
 
-Indexed database fields (title, author)
-Pagination to handle large datasets efficiently
-Query-level filtering instead of in-memory processing
-Modular architecture for future expansion
-🔮 Future Improvements
-Full-text search (PostgreSQL tsvector)
-Authentication (JWT)
-Docker containerization
-Redis caching layer
-Async database operations
-Rate limiting for API protection
+## 🧪 Validation Rules
+
+- title → required (min 1 char)
+- author → required (min 1 char)
+- isbn → min 10 chars
+- pages → > 0
+- rating → 1–5
+
+---
+
+## 📈 Scalability
+
+- Indexes on title and author
+- Pagination instead of full dataset loading
+- Database-level filtering
+- Optimized query execution
+
+---
+
+## 📸 Screenshots
+
+### 1. Swagger UI
+screenshots/1-swagger.png
+
+### 2. Create Book
+screenshots/2-create-book.png
+
+### 3. Book List + Pagination
+screenshots/3-pagination.png
+
+### 4. Search Feature
+screenshots/4-search.png
+
+### 5. Validation Errors
+screenshots/5-validation.png
+
+---
+
+## 📂 Required Screenshots
+
+Zrób i wrzuć do folderu:
+
+screenshots/
+
+Pliki:
+
+- 1-swagger.png
+- 2-create-book.png
+- 3-pagination.png
+- 4-search.png
+- 5-validation.png
+
+---
+
+## 🖥️ Run Project
+
+Backend:
+``uvicorn backend.app.main:app --reload``
+
+Frontend:
+``
+npm install
+npm run dev``
+
+---
+
+## 🧪 Tests
+
+``pytest backend/tests``
+
+---
+
+## 🚀 Future Improvements
+
+- Docker setup
+- JWT authentication
+- Redis caching
+- Full-text search (PostgreSQL tsvector)
+- CI/CD pipeline
+
+---
+
 ## 👤 Author
 
-Backend project developed as part of a job application task, demonstrating:
+Backend project built for recruitment task.
 
-REST API design
-Database modeling
-Scalable backend architecture
-Clean code practices
-### 📌 Status
+Focus:
+- scalable architecture
+- clean code
+- database design
+- real-world backend practices
 
-✔ Backend completed
-⏳ Frontend in progress
-⏳ Deployment pending
+---
 
-### 💡 Note
+## 📌 Status
 
-This project was built with a focus on clean architecture, scalability, and production-ready patterns rather than UI complexity.
+✔ Backend complete  
+✔ Database integration  
+✔ Search + pagination  
+✔ Validation  
+✔ Tests  
+⏳ Frontend polishing (optional)

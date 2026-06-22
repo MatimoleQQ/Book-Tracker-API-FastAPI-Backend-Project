@@ -1,7 +1,12 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/books_db"
+
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/booksdb"
+if not DATABASE_URL:
+    raise Exception("DATABASE_URL is not set")
+
 
 engine = create_engine(DATABASE_URL)
 

@@ -16,7 +16,7 @@ export default function BookInput({
   type = "text",
 }: Props) {
   return (
-    <div style={{ marginBottom: "10px" }}>
+    <div style={{ width:"100%" }}>
       <input
         name={name}
         value={value}
@@ -24,8 +24,13 @@ export default function BookInput({
         placeholder={placeholder}
         type={type}
         style={{
-          border: error ? "1px solid red" : "1px solid #ccc",
-          padding: "6px",
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "10px",
+          borderRadius: "8px",
+          border: error ? "1px solid red" : "1px solid #ddd",
+          color: "#111",
+          background: "white",
         }}
       />
 

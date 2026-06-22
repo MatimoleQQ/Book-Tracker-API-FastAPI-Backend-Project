@@ -6,7 +6,6 @@ import { getBooks, searchBooks } from "../api/booksApi";
 export default function BooksPage() {
   const [books, setBooks] = useState([]);
   const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useState("id");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -19,22 +18,16 @@ export default function BooksPage() {
   const loadBooks = async () => {
     setLoading(true);
     try {
-     const res = await getBooks(
-     sortBy,
-     sortOrder,
-     page,
-     limit
-     );
-     setBooks(res.data.data);
-     setTotal(res.data.total);
+      const res = await getBooks(sortBy, sortOrder, page, limit);
+      setBooks(res.data.data);
+      setTotal(res.data.total);
     } finally {
-     setLoading(false);
+      setLoading(false);
     }
-
   };
 
   useEffect(() => {
-   loadBooks();
+    loadBooks();
   }, [sortBy, sortOrder, page, limit]);
 
   useEffect(() => {
@@ -45,82 +38,191 @@ export default function BooksPage() {
     }
   }, [search]);
 
-console.log("total:", total);
-console.log("limit:", limit);
   return (
-    <div>
-      <h1>Book Tracker</h1>
+    <div style={styles.page}>
+      <div style={styles.container}>
 
-      <BookForm onAdd={loadBooks} />
+        {/* HEADER */}
+        <div style={styles.header}>
+          <h1 style={styles.title}>📚 Book Tracker</h1>
+          <p style={styles.subtitle}>Manage your reading list</p>
+        </div>
 
-      <input
-        placeholder="Search..."
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <select
-        value={sortBy}
-        onChange={(e) => setSortBy(e.target.value)}
-      >
-        <option value="id">Created Date</option>
-        <option value="title">Title</option>
-        <option value="author">Author</option>
-        <option value="pages">Pages</option>
-        <option value="rating">Rating</option>
-      </select>
+        {/* FORM CARD */}
+        <div style={styles.card}>
+          <BookForm onAdd={loadBooks} />
+        </div>
 
-      <select
-        value={sortOrder}
-        onChange={(e) => setSortOrder(e.target.value)}
-      >
-        <option value="desc">Descending</option>
-        <option value="asc">Ascending</option>
-      </select>
+        {/* TOOLBAR */}
+        <div style={styles.toolbar}>
+          <input
+            style={styles.input}
+            placeholder="Search by title or author..."
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-      <select
-          value={limit}
-          onChange={(e) => {
-            setLimit(Number(e.target.value));
-            setPage(1); // reset strony
-          }}
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-        </select>
+          <select style={styles.select} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="id">Newest</option>
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="pages">Pages</option>
+            <option value="rating">Rating</option>
+          </select>
 
+          <select style={styles.select} value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+            <option value="desc">Desc</option>
+            <option value="asc">Asc</option>
+          </select>
 
-        {loading && <p>Loading...</p>}
+          <select
+            style={styles.select}
+            value={limit}
+            onChange={(e) => {
+              setLimit(Number(e.target.value));
+              setPage(1);
+            }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
 
-        {!loading && books.length === 0 && (
-          <p>No books found.</p>
-        )}
+        {/* CONTENT */}
+        <div style={styles.card}>
+          {loading && <p style={styles.info}>Loading books...</p>}
 
-        {!loading && books.length > 0 && (
-          <>
-            <BookTable books={books} />
+          {!loading && books.length === 0 && (
+            <p style={styles.info}>No books found.</p>
+          )}
 
-            <div>
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-              >
-                Prev
-              </button>
+          {!loading && books.length > 0 && (
+            <>
+              <BookTable books={books} />
 
-              <span>
-                Page {page} of {totalPages}
-              </span>
+              {/* PAGINATION */}
+              <div style={styles.pagination}>
+                <button
+                  style={styles.button}
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                >
+                  Prev
+                </button>
 
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(page + 1)}
-              >
-                Next
-              </button>
-            </div>
-          </>
-        )}
+                <span style={styles.pageInfo}>
+                  Page <b>{page}</b> of <b>{totalPages || 1}</b>
+                </span>
+
+                <button
+                  style={styles.button}
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(page + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 }
+const styles: any = {
+  page:{
+   background: "#f9f9f9",
+   minHeight: "100vh",
+   display: "flex",
+   justifyContent: "center",
+   padding: "30px",
+  },
+
+  container: {
+    width: "100%",
+    maxWidth: "1400px",
+    margin: "0 auto",
+  },
+
+  header: {
+    marginBottom: "20px",
+  },
+
+  title: {
+    margin: 0,
+    fontSize: "28px",
+  },
+
+  subtitle: {
+    margin: "5px 0 0",
+    color: "#666",
+  },
+
+  card: {
+    background: "white",
+    padding: "16px",
+    borderRadius: "12px",
+    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+    marginBottom: "16px",
+  },
+
+  toolbar: {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "16px",
+    flexWrap: "wrap",
+  },
+
+  input: {
+    padding: "8px",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+    flex: 1,
+    minWidth: "200px",
+    color: "#111",
+    background: "white",
+  },
+
+  pagination: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "10px",
+    marginTop: "15px",
+  },
+
+  button: {
+    padding: "6px 12px",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    background: "white",
+    cursor: "pointer",
+  },
+
+  pageInfo: {
+    fontSize: "14px",
+  },
+
+  info: {
+    color: "#666",
+    textAlign: "center",
+  },
+  select: {
+  padding: "10px",
+  borderRadius: "8px",
+  border: "1px solid #ddd",
+  background: "white",
+  color: "#111",
+  outline: "none",
+  cursor: "pointer",
+  transition: "0.2s",
+  },
+  title: {
+  margin: 0,
+  fontSize: "28px",
+  color: "#111",
+  fontWeight: 700,
+  },
+};
